@@ -16,9 +16,12 @@ styleSheet.innerText = `
 `;
 document.head.appendChild(styleSheet);
 
-const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:5000' 
-  : 'https://syntrix-airdrop.onrender.com';
+// DYNAMIC HOST ROUTING: Automatically connects to local, staging, or production backend
+const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:5000'
+  : (window.location.hostname.includes('vercel.app') && !window.location.hostname.includes('syntrixhub'))
+    ? 'PASTE_YOUR_STAGING_RENDER_URL_HERE' // e.g. https://syntrix-backend-develop.onrender.com
+    : 'https://syntrix-airdrop.onrender.com';
 
 const EMAIL_REGEX = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 const WALLET_REGEX = /^0x[a-fA-F0-9]{40}$/;
@@ -981,29 +984,27 @@ async function runProfileLedgerVerification(email, isFromModal, isBackgroundSync
 
         // Trigger Offline Animation
         if (!isBackgroundSync) {
-            var savedLastSeen = localStorage.getItem('syntrix_last_seen_rewards');
+            var lastSeen = parseInt(localStorage.getItem('syntrix_last_seen_rewards') || '0');
             var currentPending = statusResult.pendingRewards || 0;
             
-            if (savedLastSeen === null) {
-                localStorage.setItem('syntrix_last_seen_rewards', currentPending);
-            } else {
-                var lastSeen = parseInt(savedLastSeen);
-                if (currentPending > lastSeen && currentPending > 0) {
-                    var newlyEarned = currentPending - lastSeen;
-                    
-                    var overlay = document.createElement('div');
-                    overlay.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 3, 8, 0.95); z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(15px); opacity: 0; transition: opacity 0.5s;";
-                    overlay.innerHTML = '<div style="font-size: 80px; margin-bottom: 20px; animation: slideUpFade 0.8s ease-out;">💎</div>' +
-                        '<div style="font-size: 14px; font-weight: 700; color: #a1a1aa; letter-spacing: 2px; margin-bottom: 10px; animation: slideUpFade 0.9s ease-out;">OFFLINE EARNINGS SECURED</div>' +
-                        '<h1 style="font-size: 56px; font-weight: 900; color: #10b981; margin: 0; text-align: center; animation: slideUpFade 1s ease-out;">+' + newlyEarned + ' SYNX</h1>' +
-                        '<p style="color: #d1d5db; font-size: 16px; margin-top: 15px; animation: slideUpFade 1.2s ease-out; text-align: center; max-width: 400px; line-height: 1.5;">Your files were successfully verified by our AI while you were offline!</p>' +
-                        '<button onclick="this.parentElement.style.opacity=\'0\'; setTimeout(() => this.parentElement.remove(), 500); window.openModeEnhanced(\'vault\');" style="margin-top: 35px; background: #ffffff; color: #000000; padding: 16px 36px; border-radius: 12px; font-weight: 800; font-size: 16px; border: none; cursor: pointer; animation: slideUpFade 1.4s ease-out; box-shadow: 0 10px 30px rgba(255,255,255,0.2);">Go to Vault &rarr;</button>';
-                    
-                    document.body.appendChild(overlay);
-                    setTimeout(function() { overlay.style.opacity = '1'; }, 100);
-                }
-                localStorage.setItem('syntrix_last_seen_rewards', currentPending);
+            // Only show animation if new rewards exist and it's not the user's first time logging in
+            if (currentPending > lastSeen && currentPending > 0 && lastSeen > 0) {
+                var newlyEarned = currentPending - lastSeen;
+                
+                var overlay = document.createElement('div');
+                overlay.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 3, 8, 0.95); z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(15px); opacity: 0; transition: opacity 0.5s;";
+                overlay.innerHTML = '<div style="font-size: 80px; margin-bottom: 20px; animation: slideUpFade 0.8s ease-out;">💎</div>' +
+                    '<div style="font-size: 14px; font-weight: 700; color: #a1a1aa; letter-spacing: 2px; margin-bottom: 10px; animation: slideUpFade 0.9s ease-out;">OFFLINE EARNINGS SECURED</div>' +
+                    '<h1 style="font-size: 56px; font-weight: 900; color: #10b981; margin: 0; text-align: center; animation: slideUpFade 1s ease-out;">+' + newlyEarned + ' SYNX</h1>' +
+                    '<p style="color: #d1d5db; font-size: 16px; margin-top: 15px; animation: slideUpFade 1.2s ease-out; text-align: center; max-width: 400px; line-height: 1.5;">Your files were successfully verified by our AI while you were offline!</p>' +
+                    '<button onclick="this.parentElement.style.opacity=\'0\'; setTimeout(() => this.parentElement.remove(), 500); window.openModeEnhanced(\'vault\');" style="margin-top: 35px; background: #ffffff; color: #000000; padding: 16px 36px; border-radius: 12px; font-weight: 800; font-size: 16px; border: none; cursor: pointer; animation: slideUpFade 1.4s ease-out; box-shadow: 0 10px 30px rgba(255,255,255,0.2);">Go to Vault &rarr;</button>';
+                
+                document.body.appendChild(overlay);
+                setTimeout(function() { overlay.style.opacity = '1'; }, 100);
             }
+            
+            // Always update localStorage to the current highest amount to prevent loop
+            localStorage.setItem('syntrix_last_seen_rewards', Math.max(currentPending, lastSeen).toString());
         }
 
         if (!isBackgroundSync) {
@@ -2925,7 +2926,6 @@ if (selfieTriggerBtn) {
     }
   };
 }
-
 
 
 
