@@ -1613,7 +1613,7 @@ body::before {
     const BACKEND_URL = (window.location.origin.includes("localhost") || window.location.origin.includes("127.0.0.1"))
       ? "http://localhost:5000"
       : (window.location.origin.includes("vercel.app") && !window.location.origin.includes("syntrixhub"))
-        ? "PASTE_YOUR_REAL_RENDER_URL_HERE" // IMPORTANT: Put the real URL here!
+        ? "https://syntrix-backend-develop.onrender.com"
         : "https://syntrix-airdrop.onrender.com";
 
     // =============================================================
