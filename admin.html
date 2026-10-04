@@ -1610,9 +1610,11 @@ body::before {
     // =============================================================
     //  BACKEND URL  CONFIGURE FOR DEPLOYMENT
     // =============================================================
-    const BACKEND_URL = window.location.origin.includes("localhost") || window.location.origin.includes("127.0.0.1")
+    const BACKEND_URL = (window.location.origin.includes("localhost") || window.location.origin.includes("127.0.0.1"))
       ? "http://localhost:5000"
-      : "https://syntrix-airdrop.onrender.com";
+      : (window.location.origin.includes("vercel.app") && !window.location.origin.includes("syntrixhub"))
+        ? "PASTE_YOUR_STAGING_RENDER_URL_HERE" // e.g. https://syntrix-backend-develop.onrender.com
+        : "https://syntrix-airdrop.onrender.com";
 
     // =============================================================
     // STATE MANAGEMENT
