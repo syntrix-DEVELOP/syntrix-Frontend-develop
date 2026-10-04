@@ -20,7 +20,7 @@ document.head.appendChild(styleSheet);
 const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ? 'http://localhost:5000'
   : (window.location.hostname.includes('vercel.app') && !window.location.hostname.includes('syntrixhub'))
-    ? 'PASTE_YOUR_REAL_RENDER_URL_HERE' // IMPORTANT: Put the real URL here!
+    ? 'https://syntrix-backend-develop.onrender.com'
     : 'https://syntrix-airdrop.onrender.com';
 
 const EMAIL_REGEX = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
